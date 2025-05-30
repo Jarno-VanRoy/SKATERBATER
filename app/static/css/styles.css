@@ -1,0 +1,208 @@
+/* --------- Base Layout --------- */
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    padding: 2rem;
+    background: #111;
+    color: #eee;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #1e1e1e;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+/* --------- Links --------- */
+a {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #61dafb;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* --------- Navbar --------- */
+nav {
+    background-color: #111;
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+nav a {
+    color: #eee;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    transition: background 0.2s ease;
+}
+
+nav a:hover {
+    background-color: #222;
+    border-radius: 4px;
+}
+
+/* --------- Form Styling --------- */
+form.form,
+.new-trick-form {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+}
+
+form label,
+.counter-row label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+}
+
+form input,
+form select,
+form textarea {
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    background: #2a2a2a;
+    color: #eee;
+    border: 1px solid #444;
+    border-radius: 5px;
+}
+
+form button {
+    padding: 0.6rem 1rem;
+    background: #61dafb;
+    border: none;
+    color: #000;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* --------- Trick Cards --------- */
+.trick-card {
+    background: #1e1e1e;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #333;
+    margin-bottom: 1rem;
+}
+
+.trick-card h2 {
+    margin-bottom: 0.5rem;
+}
+
+.trick-list {
+    list-style: none;
+    padding: 0;
+}
+
+.trick-list li {
+    margin-bottom: 1rem;
+    background: #1e1e1e;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+.trick-header {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.trick-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-grow: 1;
+}
+
+.trick-metrics {
+    font-size: 0.9rem;
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.2rem;
+}
+
+.trick-notes {
+    font-size: 0.8rem;
+    opacity: 0.75;
+    margin-top: 0.5rem;
+}
+
+/* --------- Session List --------- */
+.session-list {
+    list-style: none;
+    padding-left: 0;
+    font-size: 0.9rem;
+}
+
+.session-list li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #444;
+}
+
+/* --------- Badge Styles --------- */
+.badge {
+    background: #333;
+    color: #ccc;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+
+.badge.status.landed {
+    background: #1f6f1f;
+    color: #b8f9b8;
+}
+
+.badge.status.learning {
+    background: #804f1f;
+    color: #ffd39f;
+}
+
+/* --------- Counters --------- */
+.counter-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* --------- Flash Messages --------- */
+.flash-messages {
+    list-style: none;
+    margin: 1rem auto;
+    padding: 0;
+    max-width: 600px;
+}
+
+.flash-messages li {
+    padding: 0.75rem;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.flash-messages .success {
+    background: #1e4620;
+    color: #c8f7c5;
+}
+
+.flash-messages .error {
+    background: #801515;
+    color: #fdd;
+}

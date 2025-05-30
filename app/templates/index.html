@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Home — SKATERBATER{% endblock %}
+
+{% block content %}
+    <h1>Welcome to SKATERBATER</h1>
+    {% if session.get('user') %}
+        <p>You are logged in as {{ session['user']['email'] }}</p>
+    {% else %}
+        <p>Please log in to access your dashboard.</p>
+    {% endif %}
+{% endblock %}

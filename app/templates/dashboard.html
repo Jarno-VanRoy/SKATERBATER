@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — SKATERBATER{% endblock %}
+
+{% block content %}
+<h1>🛹 My Trick Tracker</h1>
+
+<!-- Create or log a new session -->
+<form method="POST" class="form new-trick-form">
+    <label>
+        Trick name:
+        <input type="text" name="name" placeholder="e.g. Tre Flip" required>
+    </label>
+
+    <label>
+        Stance:
+        <select name="stance">
+            <option value="">Stance</option>
+            <option value="regular">Regular</option>
+            <option value="switch">Switch</option>
+            <option value="fakie">Fakie</option>
+            <option value="nollie">Nollie</option>
+        </select>
+    </label>
+
+    <div class="counter-row">
+        <label>
+            Landed:
+            <input type="number" name="lands" min="0" value="0">
+        </label>
+
+        <label>
+            Tries:
+            <input type="number" name="tries" min="0" value="0">
+        </label>
+    </div>
+
+    <label>
+        Notes:
+        <textarea name="notes" placeholder="Session notes (optional)" rows="2"></textarea>
+    </label>
+
+    <button type="submit">➕ Log Session</button>
+</form>
+
+<hr>
+
+<!-- Trick overview cards -->
+{% for item in trick_data %}
+    <div class="trick-card">
+        <h2>{{ item.trick.name | capitalize }} <span class="badge">{{ item.trick.stance }}</span></h2>
+        <p>
+            🎯 <strong>{{ item.total_lands }}</strong> landed /
+            🔁 <strong>{{ item.total_tries }}</strong> tries
+        </p>
+        <ul class="session-list">
+            {% for s in item.sessions %}
+                <li>
+                    {{ s.created_at.strftime('%b %d') }} —
+                    🎯 {{ s.lands }}, 🔁 {{ s.tries }}
+                    {% if s.notes %} • 📝 {{ s.notes }}{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endfor %}
+{% endblock %}

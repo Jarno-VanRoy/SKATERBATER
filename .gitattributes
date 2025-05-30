@@ -1,0 +1,14 @@
+# Normalize all text files to LF
+* text=auto eol=lf
+
+# Protect sensitive or format-critical files
+*.sh text eol=lf
+*.pem text eol=lf
+*.key text eol=lf
+*.env text eol=lf
+
+# Python files
+*.py text eol=lf
+
+# Windows-only files can stay CRLF if needed (optional)
+# *.bat text eol=crlf
