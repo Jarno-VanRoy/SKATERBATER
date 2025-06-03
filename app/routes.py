@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, session, request
 from functools import wraps
 from app.models import db, Trick, UserTrick, PracticeSession
+from app.oauth import oauth  # this is your configured authlib object
+import os
+from urllib.parse import urlencode
 
 # Define the main blueprint
 main_bp = Blueprint('main', __name__)
@@ -136,13 +139,44 @@ def update_status(user_trick_id):
 
     return redirect(url_for('main.dashboard'))
 
-
-# Login and logout routes for Auth0
+# Redirect user to Auth0 login
 @main_bp.route('/login')
 def login():
-    return redirect(url_for("auth0.login"))  # Handled by Auth0 blueprint
+    return oauth.auth0.authorize_redirect(
+        redirect_uri=os.getenv("AUTH0_CALLBACK_URL")
+    )
 
-
+# Log the user out and redirect to the homepage
 @main_bp.route('/logout')
 def logout():
-    return redirect(url_for("auth0.logout"))  # Handled by Auth0 blueprint
+    session.clear()  # Remove session info
+
+    # Construct the Auth0 logout URL
+    logout_url = (
+        f"https://{os.getenv('AUTH0_DOMAIN')}/v2/logout?"
+        + urlencode({
+            "returnTo": url_for("main.index", _external=True),
+            "client_id": os.getenv("AUTH0_CLIENT_ID")
+        })
+    )
+    return redirect(logout_url)
+
+
+# Handle the Auth0 callback and store user info in the session
+@main_bp.route('/callback')
+def callback_handling():
+    # Exchange the code for an access token and fetch user info
+    token = oauth.auth0.authorize_access_token()
+
+    # Extract userinfo directly (Authlib does this internally using OpenID Connect)
+    userinfo = token["userinfo"]
+
+    # Store user info in session
+    session["user"] = {
+        "sub": userinfo["sub"],
+        "name": userinfo.get("name"),
+        "email": userinfo.get("email"),
+        "picture": userinfo.get("picture")
+    }
+
+    return redirect(url_for("main.dashboard"))
