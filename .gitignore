@@ -1,29 +1,58 @@
-# Python
+# Byte-compiled / cache files
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 
-# Environments
+# Virtual environments
 .venv/
-env/
 venv/
+env/
+ENV/
 
-# Flask
+# Flask-specific
 instance/
 *.db
 *.sqlite3
 
-# Secrets
+# Environment variables / secrets
 .env
+.env.*
 
-# IDEs
+# Auth0 or OAuth credentials (if generated separately)
+.auth0_secrets.json
+
+# IDE / Editor configs
 .idea/
 .vscode/
+*.sublime-workspace
+*.sublime-project
 
-# OS files
+# Operating System
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs and debug files
 *.log
+
+# Flask-Migrate
+migrations/versions/__pycache__/
+migrations/versions/*.pyc
+migrations/versions/*.pyo
+
+# SSL certs (local development only – DO NOT push these!)
+certs/
+*.pem
+*.key
+
+# Coverage/test/output
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+
+# Pytest cache
+.pytest_cache/
+
+# Jupyter / IPython
+.ipynb_checkpoints/

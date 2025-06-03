@@ -1,9 +1,21 @@
-<nav>
-  <a href="{{ url_for('main.home') }}">Home</a>
-  {% if session and session.get('user') %}
-    <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
-    <a href="{{ url_for('main.logout') }}">Logout</a>
-  {% else %}
-    <a href="{{ url_for('main.login') }}">Login</a>
-  {% endif %}
+<!-- Navbar: component used across all pages -->
+<nav style="background-color: #111; padding: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <!-- App name links to home page -->
+        <a href="{{ url_for('main.index') }}" style="color: white; text-decoration: none;">
+            🛹 SKATERBATER
+        </a>
+
+        <!-- Authenticated or not -->
+        {% if session.get('user') %}
+            <div>
+                <span style="color: white; margin-right: 1rem;">
+                    👤 {{ session.user.name }}
+                </span>
+                <a href="{{ url_for('main.logout') }}" style="color: white;">Logout</a>
+            </div>
+        {% else %}
+            <a href="{{ url_for('main.login') }}" style="color: white;">Login</a>
+        {% endif %}
+    </div>
 </nav>

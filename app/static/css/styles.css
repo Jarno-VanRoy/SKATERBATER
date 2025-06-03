@@ -206,3 +206,35 @@ form button {
     background: #801515;
     color: #fdd;
 }
+.counter-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.counter-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.flash-messages {
+  list-style: none;
+  padding: 0;
+  margin: 1rem auto;
+  max-width: 600px;
+}
+.flash-messages li {
+  padding: 0.75rem;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+.flash-messages .success {
+  background: #1e4620;
+  color: #c8f7c5;
+}
+.flash-messages .error {
+  background: #801515;
+  color: #fdd;
+}

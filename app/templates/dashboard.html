@@ -1,67 +1,96 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard — SKATERBATER{% endblock %}
+{% block title %}Dashboard - SKATERBATER 🛹{% endblock %}
 
 {% block content %}
-<h1>🛹 My Trick Tracker</h1>
+<div class="dashboard-container">
+  <!-- Page Heading -->
+  <h1>🛹 Your Trick Dashboard</h1>
+  <p>Track your skateboarding progress across tricks!</p>
 
-<!-- Create or log a new session -->
-<form method="POST" class="form new-trick-form">
-    <label>
-        Trick name:
-        <input type="text" name="name" placeholder="e.g. Tre Flip" required>
-    </label>
+  <!-- Add Trick Form -->
+  <div class="add-trick-form">
+    <h2>Add a Trick</h2>
+    <form method="POST" action="{{ url_for('main.add_trick') }}">
+      <!-- Trick Dropdown: Populated from all_tricks -->
+      <label for="trick">Select a Trick:</label>
+      <select name="trick_id" id="trick" required>
+        <option value="">-- Choose a Trick --</option>
+        {% for trick in all_tricks %}
+          <option value="{{ trick.id }}">{{ trick.name }}</option>
+        {% endfor %}
+      </select>
 
-    <label>
-        Stance:
-        <select name="stance">
-            <option value="">Stance</option>
-            <option value="regular">Regular</option>
-            <option value="switch">Switch</option>
-            <option value="fakie">Fakie</option>
-            <option value="nollie">Nollie</option>
-        </select>
-    </label>
+      <!-- Starting Status Dropdown -->
+      <label for="status">Start In Category:</label>
+      <select name="status" id="status" required>
+        <option value="to_learn">To Learn</option>
+        <option value="in_progress">In Progress</option>
+        <option value="mastered">Mastered</option>
+      </select>
 
-    <div class="counter-row">
-        <label>
-            Landed:
-            <input type="number" name="lands" min="0" value="0">
-        </label>
+      <!-- Submit Button -->
+      <button type="submit">➕ Add Trick</button>
+    </form>
+  </div>
 
-        <label>
-            Tries:
-            <input type="number" name="tries" min="0" value="0">
-        </label>
-    </div>
+  <hr>
 
-    <label>
-        Notes:
-        <textarea name="notes" placeholder="Session notes (optional)" rows="2"></textarea>
-    </label>
-
-    <button type="submit">➕ Log Session</button>
-</form>
-
-<hr>
-
-<!-- Trick overview cards -->
-{% for item in trick_data %}
-    <div class="trick-card">
-        <h2>{{ item.trick.name | capitalize }} <span class="badge">{{ item.trick.stance }}</span></h2>
-        <p>
-            🎯 <strong>{{ item.total_lands }}</strong> landed /
-            🔁 <strong>{{ item.total_tries }}</strong> tries
-        </p>
-        <ul class="session-list">
-            {% for s in item.sessions %}
-                <li>
-                    {{ s.created_at.strftime('%b %d') }} —
-                    🎯 {{ s.lands }}, 🔁 {{ s.tries }}
-                    {% if s.notes %} • 📝 {{ s.notes }}{% endif %}
-                </li>
-            {% endfor %}
+  <!-- Trick Lists by Status -->
+  <div class="trick-lists">
+    <!-- To Learn Section -->
+    <section>
+      <h2>🧠 Tricks To Learn</h2>
+      {% if to_learn %}
+        <ul>
+          {% for ut in to_learn %}
+            <li>
+              {{ ut.trick.name }}
+              <!-- Link to view or log sessions if needed -->
+              <a href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
+            </li>
+          {% endfor %}
         </ul>
-    </div>
-{% endfor %}
+      {% else %}
+        <p>No tricks in this category yet.</p>
+      {% endif %}
+    </section>
+
+    <!-- In Progress Section -->
+    <section>
+      <h2>⏳ Tricks In Progress</h2>
+      {% if in_progress %}
+        <ul>
+          {% for ut in in_progress %}
+            <li>
+              {{ ut.trick.name }}
+              <a href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No tricks in progress.</p>
+      {% endif %}
+    </section>
+
+    <!-- Mastered Section -->
+    <section>
+      <h2>🏆 Mastered Tricks</h2>
+      {% if mastered %}
+        <ul>
+          {% for ut in mastered %}
+            <li>
+              {{ ut.trick.name }}
+              <a href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No tricks mastered yet.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+<!-- Optional: Add some spacing or footer content -->
 {% endblock %}

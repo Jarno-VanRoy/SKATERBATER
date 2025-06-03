@@ -1,12 +1,17 @@
 {% extends 'base.html' %}
-
-{% block title %}Home — SKATERBATER{% endblock %}
-
 {% block content %}
-    <h1>Welcome to SKATERBATER</h1>
-    {% if session.get('user') %}
-        <p>You are logged in as {{ session['user']['email'] }}</p>
-    {% else %}
-        <p>Please log in to access your dashboard.</p>
-    {% endif %}
+    <div class="p-4 text-center">
+        <h1 class="text-3xl font-bold mb-2">Welcome to SKATERBATER 🛹</h1>
+        <p class="mb-4">Track your skate tricks and practice sessions.</p>
+
+        {% if session.get('user') %}
+            <a href="{{ url_for('main.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Go to Dashboard
+            </a>
+        {% else %}
+            <a href="{{ url_for('main.login') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Log In to Get Started
+            </a>
+        {% endif %}
+    </div>
 {% endblock %}
