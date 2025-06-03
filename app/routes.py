@@ -86,19 +86,27 @@ def trick_detail(user_trick_id):
 @requires_auth
 def log_session(user_trick_id):
     user_id = session["user"]["sub"]
+
+    # Retrieve the correct UserTrick instance for the logged-in user
     user_trick = UserTrick.query.filter_by(id=user_trick_id, user_id=user_id).first_or_404()
 
-    # Get session data from form
-    date_str = request.form.get('date')
-    tries = request.form.get('tries', type=int)
-    landed = request.form.get('landed', type=int)
-    notes = request.form.get('notes', '')
+    # Get submitted form values
+    date_str = request.form.get('date')  # optional
+    tries = request.form.get('tries', type=int)  # total number of attempts
+    landed = request.form.get('landed', type=int)  # total successful landings
+    notes = request.form.get('notes', '')  # optional notes
 
-    # Parse date or fallback to today
+    # If no date is provided, fallback to today
     from datetime import datetime, date
     session_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else date.today()
 
-    # Create and add new session
+    # ❗ Logical validation: can't land more times than attempted
+    if landed > tries:
+        # Return to the trick detail page with an error message
+        error = "You can't land more times than you tried! 🤔"
+        return render_template('trick_detail.html', user_trick=user_trick, error=error)
+
+    # Create a new PracticeSession record
     new_session = PracticeSession(
         user_trick_id=user_trick.id,
         date=session_date,
@@ -106,11 +114,13 @@ def log_session(user_trick_id):
         landed=landed,
         notes=notes
     )
+
+    # Add and commit to the database
     db.session.add(new_session)
     db.session.commit()
 
+    # Redirect back to the trick detail page after logging
     return redirect(url_for('main.trick_detail', user_trick_id=user_trick.id))
-
 
 # Change the status of a user trick (e.g. from in_progress to mastered)
 @main_bp.route('/update_status/<int:user_trick_id>', methods=['POST'])

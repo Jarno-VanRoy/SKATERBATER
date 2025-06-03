@@ -7,7 +7,7 @@
     <p class="mb-2">Current Status: <strong>{{ user_trick.status }}</strong></p>
 
     <!-- Change status form -->
-    <form method="POST" action="{{ url_for('main.update_trick_status', user_trick_id=user_trick.id) }}" class="mb-4">
+    <form method="POST" action="{{ url_for('main.update_status', user_trick_id=user_trick.id) }}" class="mb-4">
         <label for="status" class="block mb-1">Change Status:</label>
         <select name="status" id="status" class="border rounded px-2 py-1 mr-2">
             <option value="to_learn" {% if user_trick.status == 'to_learn' %}selected{% endif %}>To Learn</option>
@@ -37,6 +37,14 @@
 
     <!-- Log New Session -->
     <h3 class="text-lg font-semibold mt-6 mb-2">Log a New Session</h3>
+
+    {% if error %}
+        <!-- Show validation errors just above the form -->
+        <div class="text-red-600 font-semibold bg-red-100 border border-red-300 rounded-xl p-2 mb-4">
+            ⚠️ {{ error }}
+        </div>
+    {% endif %}
+
     <form method="POST" action="{{ url_for('main.log_session', user_trick_id=user_trick.id) }}">
         <div class="mb-2">
             <label for="date" class="block">Date:</label>
