@@ -2,6 +2,11 @@
 
 {% block title %}Dashboard - SKATERBATER 🛹{% endblock %}
 
+{% block extra_styles %}
+<!-- Page-specific styles for the dashboard -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="dashboard-container">
   <!-- Page Heading -->
@@ -9,7 +14,7 @@
   <p>Track your skateboarding progress across tricks!</p>
 
   <!-- Add Trick Form -->
-  <div class="add-trick-form">
+  <div class="add-trick-form card">
     <h2>Add a Trick</h2>
     <form method="POST" action="{{ url_for('main.add_trick') }}">
       <!-- Trick Dropdown: Populated from all_tricks -->
@@ -22,32 +27,33 @@
       </select>
 
       <!-- Starting Status Dropdown -->
+    <br>
       <label for="status">Start In Category:</label>
       <select name="status" id="status" required>
         <option value="to_learn">To Learn</option>
         <option value="in_progress">In Progress</option>
         <option value="mastered">Mastered</option>
       </select>
+    <br>
 
       <!-- Submit Button -->
       <button type="submit">➕ Add Trick</button>
     </form>
   </div>
 
-  <hr>
+  <hr />
 
   <!-- Trick Lists by Status -->
   <div class="trick-lists">
     <!-- To Learn Section -->
-    <section>
+    <section class="trick-list-section">
       <h2>🧠 Tricks To Learn</h2>
       {% if to_learn %}
-        <ul>
+        <ul class="trick-list">
           {% for ut in to_learn %}
             <li>
               {{ ut.trick.name }}
-              <!-- Link to view or log sessions if needed -->
-              <a href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
+              <a class="badge" href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
             </li>
           {% endfor %}
         </ul>
@@ -57,14 +63,14 @@
     </section>
 
     <!-- In Progress Section -->
-    <section>
+    <section class="trick-list-section">
       <h2>⏳ Tricks In Progress</h2>
       {% if in_progress %}
-        <ul>
+        <ul class="trick-list">
           {% for ut in in_progress %}
             <li>
               {{ ut.trick.name }}
-              <a href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
+              <a class="badge" href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
             </li>
           {% endfor %}
         </ul>
@@ -74,14 +80,14 @@
     </section>
 
     <!-- Mastered Section -->
-    <section>
+    <section class="trick-list-section">
       <h2>🏆 Mastered Tricks</h2>
       {% if mastered %}
-        <ul>
+        <ul class="trick-list">
           {% for ut in mastered %}
             <li>
               {{ ut.trick.name }}
-              <a href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
+              <a class="badge" href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
             </li>
           {% endfor %}
         </ul>
@@ -91,6 +97,4 @@
     </section>
   </div>
 </div>
-
-<!-- Optional: Add some spacing or footer content -->
 {% endblock %}

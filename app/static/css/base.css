@@ -1,0 +1,30 @@
+/* --------- Base Layout --------- */
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    padding: 2rem;
+    background: #111;
+    color: #eee;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #1e1e1e;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+/* --------- Links --------- */
+a {
+    display: inline-block;
+    margin: 0;
+    color: #61dafb;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}

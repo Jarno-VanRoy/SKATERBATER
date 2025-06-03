@@ -1,34 +1,3 @@
-/* --------- Base Layout --------- */
-body {
-    font-family: system-ui, sans-serif;
-    margin: 0;
-    padding: 2rem;
-    background: #111;
-    color: #eee;
-}
-
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    background: #1e1e1e;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
-}
-
-/* --------- Links --------- */
-a {
-    display: inline-block;
-    margin-top: 1rem;
-    color: #61dafb;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
 /* --------- Navbar --------- */
 nav {
     background-color: #111;
@@ -53,22 +22,18 @@ nav a:hover {
     border-radius: 4px;
 }
 
-/* --------- Form Styling --------- */
-form.form,
-.new-trick-form {
-    display: grid;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    max-width: 600px;
-}
-
-form label,
-.counter-row label {
-    display: flex;
-    flex-direction: column;
+/* --------- Buttons --------- */
+button {
+    padding: 0.6rem 1rem;
+    background: #61dafb;
+    border: none;
+    color: #000;
     font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
+/* --------- Form Inputs --------- */
 form input,
 form select,
 form textarea {
@@ -80,40 +45,14 @@ form textarea {
     border-radius: 5px;
 }
 
-form button {
-    padding: 0.6rem 1rem;
-    background: #61dafb;
-    border: none;
-    color: #000;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
 /* --------- Trick Cards --------- */
-.trick-card {
+.trick-card,
+.trick-list li {
     background: #1e1e1e;
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: 10px;
     border: 1px solid #333;
     margin-bottom: 1rem;
-}
-
-.trick-card h2 {
-    margin-bottom: 0.5rem;
-}
-
-.trick-list {
-    list-style: none;
-    padding: 0;
-}
-
-.trick-list li {
-    margin-bottom: 1rem;
-    background: #1e1e1e;
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #333;
 }
 
 .trick-header {
@@ -146,11 +85,11 @@ form button {
 .session-list {
     list-style: none;
     padding-left: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .session-list li {
-    padding: 0.25rem 0;
+    padding: 0.5rem;
     border-bottom: 1px solid #444;
 }
 
@@ -172,13 +111,6 @@ form button {
 .badge.status.learning {
     background: #804f1f;
     color: #ffd39f;
-}
-
-/* --------- Counters --------- */
-.counter-row {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
 }
 
 /* --------- Flash Messages --------- */
@@ -205,36 +137,4 @@ form button {
 .flash-messages .error {
     background: #801515;
     color: #fdd;
-}
-.counter-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-.counter-row label {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.flash-messages {
-  list-style: none;
-  padding: 0;
-  margin: 1rem auto;
-  max-width: 600px;
-}
-.flash-messages li {
-  padding: 0.75rem;
-  font-weight: bold;
-  text-align: center;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-}
-.flash-messages .success {
-  background: #1e4620;
-  color: #c8f7c5;
-}
-.flash-messages .error {
-  background: #801515;
-  color: #fdd;
 }

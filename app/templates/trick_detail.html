@@ -1,70 +1,88 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ user_trick.trick.name }} - SKATERBATER{% endblock %}
+
+{# ✅ Ensure the per-page CSS is loaded regardless of endpoint naming #}
+{% block extra_styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/trick_detail.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="p-4">
-    <h1 class="text-2xl font-bold mb-4">{{ user_trick.trick.name }}</h1>
+<div class="card trick-detail-card">
 
-    <!-- Trick Status -->
-    <p class="mb-2">Current Status: <strong>{{ user_trick.status }}</strong></p>
+  <!-- Trick Title -->
+  <h1 class="trick-title">
+    🛹 {{ user_trick.trick.name }}
+  </h1>
 
-    <!-- Change status form -->
-    <form method="POST" action="{{ url_for('main.update_status', user_trick_id=user_trick.id) }}" class="mb-4">
-        <label for="status" class="block mb-1">Change Status:</label>
-        <select name="status" id="status" class="border rounded px-2 py-1 mr-2">
-            <option value="to_learn" {% if user_trick.status == 'to_learn' %}selected{% endif %}>To Learn</option>
-            <option value="in_progress" {% if user_trick.status == 'in_progress' %}selected{% endif %}>In Progress</option>
-            <option value="mastered" {% if user_trick.status == 'mastered' %}selected{% endif %}>Mastered</option>
-        </select>
-        <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded">
-            Update
-        </button>
-    </form>
+  <!-- Current Status -->
+  <p class="status-display">
+    Current Status: <strong>{{ user_trick.status.replace('_', ' ').title() }}</strong>
+  </p>
 
-    <!-- Practice Sessions -->
-    <h2 class="text-xl font-semibold mt-6 mb-2">Practice Sessions</h2>
-    {% if user_trick.sessions %}
-        <ul>
-            {% for session in user_trick.sessions %}
-                <li class="mb-2 border rounded p-2">
-                    <strong>{{ session.date.strftime('%Y-%m-%d') }}</strong><br>
-                    Tries: {{ session.tries }} | Landed: {{ session.landed }}<br>
-                    Notes: {{ session.notes }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No sessions logged yet.</p>
-    {% endif %}
+  <!-- Change Status Form -->
+  <form method="POST" action="{{ url_for('main.update_status', user_trick_id=user_trick.id) }}" class="status-form">
+    <label for="status">Change Status:</label>
+    <div class="status-controls">
+      <select name="status" id="status">
+        <option value="to_learn" {% if user_trick.status == 'to_learn' %}selected{% endif %}>To Learn</option>
+        <option value="in_progress" {% if user_trick.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+        <option value="mastered" {% if user_trick.status == 'mastered' %}selected{% endif %}>Mastered</option>
+      </select>
+      <button type="submit" class="btn-primary">Update</button>
+    </div>
+  </form>
 
-    <!-- Log New Session -->
-    <h3 class="text-lg font-semibold mt-6 mb-2">Log a New Session</h3>
+ <!-- Practice Sessions -->
+<h2 class="session-header">📅 Practice Sessions</h2>
 
-    {% if error %}
-        <!-- Show validation errors just above the form -->
-        <div class="text-red-600 font-semibold bg-red-100 border border-red-300 rounded-xl p-2 mb-4">
-            ⚠️ {{ error }}
-        </div>
-    {% endif %}
+{% if user_trick.sessions %}
+  <ul class="session-list">
+    {% for session in user_trick.sessions|sort(attribute='date', reverse=True) %}
+      <li class="session-card">
+        <strong>{{ session.date.strftime('%Y-%m-%d') }}</strong><br>
+        🎲 Tries: {{ session.tries }} | 🎯 Landed: {{ session.landed }}<br>
+        📝 Notes: {{ session.notes or '—' }}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="session-empty">No sessions logged yet.</p>
+{% endif %}
 
-    <form method="POST" action="{{ url_for('main.log_session', user_trick_id=user_trick.id) }}">
-        <div class="mb-2">
-            <label for="date" class="block">Date:</label>
-            <input type="date" name="date" id="date" class="w-full border rounded px-2 py-1" value="{{ current_date }}">
-        </div>
-        <div class="mb-2">
-            <label for="tries" class="block">Tries:</label>
-            <input type="number" name="tries" id="tries" class="w-full border rounded px-2 py-1" required>
-        </div>
-        <div class="mb-2">
-            <label for="landed" class="block">Landed:</label>
-            <input type="number" name="landed" id="landed" class="w-full border rounded px-2 py-1" required>
-        </div>
-        <div class="mb-2">
-            <label for="notes" class="block">Notes:</label>
-            <textarea name="notes" id="notes" class="w-full border rounded px-2 py-1"></textarea>
-        </div>
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Save Session
-        </button>
-    </form>
+
+  <!-- Log New Session -->
+  <h3 class="session-header">➕ Log a New Session</h3>
+
+  {% if error %}
+    <div class="form-error">
+      ⚠️ {{ error }}
+    </div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('main.log_session', user_trick_id=user_trick.id) }}" class="log-session-form">
+    <div class="form-row">
+      <div class="form-field">
+        <label for="date">📅 Date:</label>
+        <input type="date" name="date" id="date" value="{{ current_date }}">
+      </div>
+      <div class="form-field">
+        <label for="tries">🎲 Tries:</label>
+        <input type="number" name="tries" id="tries" required min="0">
+      </div>
+      <div class="form-field">
+        <label for="landed">🎯 Landed:</label>
+        <input type="number" name="landed" id="landed" required min="0">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">📝 Notes:</label>
+      <textarea name="notes" id="notes" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="btn-primary">💾 Save Session</button>
+  </form>
+
 </div>
 {% endblock %}
