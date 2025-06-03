@@ -138,3 +138,34 @@ form textarea {
     background: #801515;
     color: #fdd;
 }
+
+/* --------- Navbar Layout Sections --------- */
+.navbar {
+    background-color: #111;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+.navbar-section {
+    flex: 1;
+}
+
+.navbar-left {
+    text-align: left;
+}
+
+.navbar-center {
+    text-align: center;
+}
+
+.navbar-right {
+    text-align: right;
+}
+
+.navbar-user {
+    color: #eee;
+    margin-right: 1rem;
+}

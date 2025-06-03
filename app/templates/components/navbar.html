@@ -1,21 +1,19 @@
 <!-- Navbar: component used across all pages -->
-<nav style="background-color: #111; padding: 1rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <!-- App name links to home page -->
-        <a href="{{ url_for('main.index') }}" style="color: white; text-decoration: none;">
-            🛹 SKATERBATER
-        </a>
+<nav class="navbar">
+  <div class="navbar-section navbar-left">
+    <a href="{{ url_for('main.index') }}">🛹 SKATERBATER</a>
+  </div>
 
-        <!-- Authenticated or not -->
-        {% if session.get('user') %}
-            <div>
-                <span style="color: white; margin-right: 1rem;">
-                    👤 {{ session.user.name }}
-                </span>
-                <a href="{{ url_for('main.logout') }}" style="color: white;">Logout</a>
-            </div>
-        {% else %}
-            <a href="{{ url_for('main.login') }}" style="color: white;">Login</a>
-        {% endif %}
-    </div>
+  <div class="navbar-section navbar-center">
+    <a href="{{ url_for('main.dashboard') }}">🏠 Dashboard</a>
+  </div>
+
+  <div class="navbar-section navbar-right">
+    {% if session.get('user') %}
+      <span class="navbar-user">👤 {{ session.user.name }}</span>
+      <a href="{{ url_for('main.logout') }}">Logout</a>
+    {% else %}
+      <a href="{{ url_for('main.login') }}">Login</a>
+    {% endif %}
+  </div>
 </nav>
