@@ -252,6 +252,75 @@ def trick_progress_chart(user_trick_id):
     # Return chart as an inline image (PNG format)
     return send_file(buf, mimetype='image/png')
 
+# -------------------------------
+# Chart: Cumulative lands Over Time
+# -------------------------------
+@main_bp.route('/cumulative_lands_chart/<int:user_trick_id>')
+@requires_auth
+def cumulative_lands_chart(user_trick_id):
+    user_id = session["user"]["sub"]
+
+    # Fetch the trick only if it belongs to the current user
+    user_trick = UserTrick.query.filter_by(id=user_trick_id, user_id=user_id).first_or_404()
+
+    # Get all log entries for this trick, sorted by date
+    logs = PracticeLogEntry.query.filter_by(user_trick_id=user_trick.id).order_by(PracticeLogEntry.date).all()
+
+    # Group landed counts by date
+    from collections import defaultdict
+    from datetime import datetime
+
+    grouped = defaultdict(int)
+    for log in logs:
+        grouped[log.date] += log.landed
+
+    buf = io.BytesIO()
+
+    if not grouped:
+        # Fallback if there's no data yet
+        fig, ax = plt.subplots(facecolor='#222')
+        ax.text(0.5, 0.5, "No landings yet 🛹", ha='center', va='center', color='white', fontsize=14)
+        ax.set_facecolor('#222')
+    else:
+        # Sort the dates to show progression
+        dates = sorted(grouped.keys())
+        daily_landed = [grouped[d] for d in dates]
+
+        # Build the cumulative landed list (running total)
+        cumulative_landed = []
+        total = 0
+        for landed in daily_landed:
+            total += landed
+            cumulative_landed.append(total)
+
+        # Create the plot
+        fig, ax = plt.subplots(figsize=(8, 3), facecolor='#222')  # Smaller vertical height for sleek look
+        ax.set_facecolor('#333')
+
+        # Plot cumulative landed tricks
+        ax.plot(dates, cumulative_landed, marker='o', color='deepskyblue', linewidth=2, label='Total Lands')
+
+        # Titles and labels
+        ax.set_title(f"Cumulative Lands for {user_trick.trick.name}", color='white', fontsize=14, pad=15)
+        ax.set_xlabel("Date", color='white')
+        ax.set_ylabel("Total Lands", color='white')
+
+        # Format x-axis with month + year
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %y'))
+        fig.autofmt_xdate(rotation=45)
+
+        # Grid, ticks, legend
+        ax.grid(True, linestyle='--', alpha=0.3)
+        ax.tick_params(colors='white')
+        ax.legend(facecolor='#444', edgecolor='none', loc='upper left', labelcolor='white')
+
+    # Final layout and output
+    fig.tight_layout()
+    plt.savefig(buf, format='png', facecolor=fig.get_facecolor())
+    plt.close(fig)
+    buf.seek(0)
+
+    return send_file(buf, mimetype='image/png')
 
 # ---------------------------------------
 # CHANGE STATUS OF A TRICK (e.g. from "in progress" to "mastered")
