@@ -1,10 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, session, request
+from flask import Blueprint, render_template, redirect, url_for, session, request, send_file
 from functools import wraps
 from app.models import db, Trick, UserTrick, PracticeLogEntry
 from app.oauth import oauth
 from urllib.parse import urlencode
 from datetime import datetime, date
 import os
+import io
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 main_bp = Blueprint('main', __name__)
 
@@ -168,6 +171,86 @@ def delete_log_entry(entry_id):
     db.session.commit()
 
     return redirect(url_for('main.trick_detail', user_trick_id=user_trick_id))
+
+# -------------------------------
+# Chart: Trick Progress Over Time
+# -------------------------------
+@main_bp.route('/trick_progress_chart/<int:user_trick_id>')
+@requires_auth
+def trick_progress_chart(user_trick_id):
+    user_id = session["user"]["sub"]
+
+    # Fetch the trick the user is working on, or return 404 if not found
+    user_trick = UserTrick.query.filter_by(id=user_trick_id, user_id=user_id).first_or_404()
+
+    # Get all practice logs for this user trick, sorted by date
+    logs = PracticeLogEntry.query.filter_by(user_trick_id=user_trick.id).order_by(PracticeLogEntry.date).all()
+
+    from collections import defaultdict
+    from datetime import datetime
+
+    # Group log data by date to calculate daily totals
+    grouped = defaultdict(lambda: {'tries': 0, 'landed': 0})
+    for log in logs:
+        grouped[log.date]['tries'] += log.tries
+        grouped[log.date]['landed'] += log.landed
+
+    # Create a bytes buffer to store the image in memory
+    buf = io.BytesIO()
+
+    if not grouped:
+        # If no data yet, display a placeholder message
+        fig, ax = plt.subplots(figsize=(8, 3), facecolor='#222')  # smaller height
+        ax.text(0.5, 0.5, "No data yet 🛹", ha='center', va='center', color='white', fontsize=14)
+        ax.set_facecolor('#222')
+        ax.axis('off')  # Hide axes
+    else:
+        # Sort dates and calculate values to plot
+        dates = sorted(grouped.keys())
+        landed_counts = [grouped[d]['landed'] for d in dates]
+        tries_counts = [grouped[d]['tries'] for d in dates]
+
+        # Calculate landing % for each day (0 if no tries that day)
+        landing_percentages = [
+            (landed / tries) * 100 if tries else 0
+            for landed, tries in zip(landed_counts, tries_counts)
+        ]
+
+        # Create the figure with smaller height for a more streamlined layout
+        fig, ax = plt.subplots(figsize=(8, 3), facecolor='#222')  # dark background
+        ax.set_facecolor('#333')  # slightly lighter plot area
+
+        # Plot the landing percentage over time
+        ax.plot(dates, landing_percentages, marker='o', color='limegreen', linewidth=2, label='Landing %')
+
+        # Title and axis labels
+        ax.set_title(f"Landing % Over Time for {user_trick.trick.name}", color='white', fontsize=13, pad=12)
+        ax.set_xlabel("Date", color='white', fontsize=10)
+        ax.set_ylabel("Landing %", color='white', fontsize=10)
+        ax.set_ylim(0, 100)  # Y-axis from 0 to 100%
+
+        # Format dates: short month + day (e.g., Jun 05)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+        fig.autofmt_xdate(rotation=40)  # tilt dates for readability
+
+        # Tweak grid and axis appearance
+        ax.grid(True, linestyle='--', alpha=0.3)
+        ax.tick_params(colors='white', labelsize=8)  # smaller ticks for cleaner look
+
+        # Add legend
+        ax.legend(
+            facecolor='#444', edgecolor='none', loc='upper left',
+            labelcolor='white', fontsize=9
+        )
+
+    # Final layout and save image to buffer
+    fig.tight_layout(pad=2)
+    plt.savefig(buf, format='png', facecolor=fig.get_facecolor())
+    plt.close(fig)
+    buf.seek(0)
+
+    # Return chart as an inline image (PNG format)
+    return send_file(buf, mimetype='image/png')
 
 
 # ---------------------------------------

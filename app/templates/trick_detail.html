@@ -111,4 +111,12 @@
   </form>
 
 </div>
+
+    <!-- Progress Chart -->
+<h2 class="session-header">📊 Landing % Over Time</h2>
+<div class="progress-chart-container">
+  <img src="{{ url_for('main.trick_progress_chart', user_trick_id=user_trick.id) }}" alt="Progress Chart">
+</div>
+
 {% endblock %}
+
