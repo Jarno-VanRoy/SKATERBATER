@@ -2,7 +2,6 @@
 
 {% block title %}{{ user_trick.trick.name }} - SKATERBATER{% endblock %}
 
-{# ✅ Ensure the per-page CSS is loaded regardless of endpoint naming #}
 {% block extra_styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/trick_detail.css') }}">
 {% endblock %}
@@ -11,9 +10,7 @@
 <div class="card trick-detail-card">
 
   <!-- Trick Title -->
-  <h1 class="trick-title">
-    🛹 {{ user_trick.trick.name }}
-  </h1>
+  <h1 class="trick-title">🛹 {{ user_trick.trick.name }}</h1>
 
   <!-- Current Status -->
   <p class="status-display">
@@ -33,38 +30,67 @@
     </div>
   </form>
 
- <!-- Practice Sessions -->
-<h2 class="session-header">📅 Practice Sessions</h2>
+<!-- Practice Logs Section -->
+<h2 class="session-header">📅 Practice Log Entries</h2>
 
-{% if user_trick.sessions %}
+{% if log_entries %}
+  {# Group entries by date #}
+  {% set grouped_logs = {} %}
+  {% for entry in log_entries %}
+    {% set day = entry.date %}
+    {% if day not in grouped_logs %}
+      {% set _ = grouped_logs.update({day: []}) %}
+    {% endif %}
+    {% set _ = grouped_logs[day].append(entry) %}
+  {% endfor %}
+
   <ul class="session-list">
-    {% for session in user_trick.sessions|sort(attribute='date', reverse=True) %}
-      <li class="session-card">
-        <strong>{{ session.date.strftime('%Y-%m-%d') }}</strong><br>
-        🎲 Tries: {{ session.tries }} | 🎯 Landed: {{ session.landed }}<br>
-        📝 Notes: {{ session.notes or '—' }}
-      </li>
+    {% for date, entries in grouped_logs.items() %}
+      {# Calculate total tries and landed for this date #}
+      {% set total_tries = entries | map(attribute='tries') | sum %}
+      {% set total_landed = entries | map(attribute='landed') | sum %}
+
+      <details class="session-date-group" open>
+        <summary><strong>{{ date.strftime('%A, %B %d, %Y') }}</strong></summary>
+        <div class="daily-summary">
+          <strong style="margin-left: 1.1rem;">Total:</strong> 🎲 Tries: {{ total_tries }} | 🎯 Landed: {{ total_landed }}
+        </div>
+        <ul class="session-sublist">
+          {% for entry in entries %}
+            <li class="session-card">
+              <div class="log-entry-row">
+                <div class="log-entry-details">
+                  <div><strong>🕒 {{ entry.time_logged.strftime('%H:%M') }}</strong></div>
+                  <div>🎲 Tries: {{ entry.tries }} | 🎯 Landed: {{ entry.landed }}</div>
+                  <div>📝 Notes: {{ (entry.note or '—') | replace('\n', '<br>') | safe }}</div>
+                </div>
+                <form method="POST" action="{{ url_for('main.delete_log_entry', entry_id=entry.id) }}" class="delete-entry-form">
+                  <button type="submit" class="delete-entry-button" title="Delete this entry">❌</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </details>
     {% endfor %}
   </ul>
 {% else %}
-  <p class="session-empty">No sessions logged yet.</p>
+  <p class="session-empty">No log entries yet.</p>
 {% endif %}
 
 
-  <!-- Log New Session -->
+  <!-- Log New Entry Form -->
   <h3 class="session-header">➕ Log a New Session</h3>
 
   {% if error %}
-    <div class="form-error">
-      ⚠️ {{ error }}
-    </div>
+    <div class="form-error">⚠️ {{ error }}</div>
   {% endif %}
 
   <form method="POST" action="{{ url_for('main.log_session', user_trick_id=user_trick.id) }}" class="log-session-form">
     <div class="form-row">
       <div class="form-field">
         <label for="date">📅 Date:</label>
-        <input type="date" name="date" id="date" value="{{ current_date }}">
+        <input type="date" name="date" id="date" value="{{ current_date or current_date }}">
       </div>
       <div class="form-field">
         <label for="tries">🎲 Tries:</label>
@@ -81,7 +107,7 @@
       <textarea name="notes" id="notes" rows="3"></textarea>
     </div>
 
-    <button type="submit" class="btn-primary">💾 Save Session</button>
+    <button type="submit" class="btn-primary">💾 Save Entry</button>
   </form>
 
 </div>

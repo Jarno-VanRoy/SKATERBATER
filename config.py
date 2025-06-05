@@ -11,7 +11,7 @@ class Config:
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
 
     # SQLite database - stored in project root for convenience
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "skaterbater.db")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "instance", "skaterbater.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Flask-Session will store session data on the local filesystem

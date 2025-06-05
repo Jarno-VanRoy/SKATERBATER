@@ -117,3 +117,30 @@ button.btn-primary:hover {
   border-radius: 6px;
   border: 1px solid #aa4444;
 }
+.log-entry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.log-entry-details {
+  flex-grow: 1;
+}
+
+.delete-entry-form {
+  margin: 0;
+}
+
+.delete-entry-button {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  color: crimson;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+.delete-entry-button:hover {
+  transform: scale(1.2);
+}

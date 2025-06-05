@@ -1,14 +1,16 @@
 from flask import Blueprint, render_template, redirect, url_for, session, request
 from functools import wraps
-from app.models import db, Trick, UserTrick, PracticeSession
-from app.oauth import oauth  # this is your configured authlib object
-import os
+from app.models import db, Trick, UserTrick, PracticeLogEntry
+from app.oauth import oauth
 from urllib.parse import urlencode
+from datetime import datetime, date
+import os
 
-# Define the main blueprint
 main_bp = Blueprint('main', __name__)
 
-# Decorator to require login for protected routes
+# ---------------------------------------
+# AUTH DECORATOR: restricts routes to logged-in users only
+# ---------------------------------------
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -18,27 +20,31 @@ def requires_auth(f):
     return decorated
 
 
-# Home page route — open to all users
+# ---------------------------------------
+# HOME PAGE
+# ---------------------------------------
 @main_bp.route('/')
 def index():
     return render_template('index.html')
 
 
-# Dashboard view — requires user to be logged in
+# ---------------------------------------
+# DASHBOARD
+# ---------------------------------------
 @main_bp.route('/dashboard')
 @requires_auth
 def dashboard():
     user_id = session.get('user', {}).get('sub')
 
-    # Get all UserTricks for this user
+    # All tricks associated with this user
     user_tricks = UserTrick.query.filter_by(user_id=user_id).all()
 
-    # Separate them by status
+    # Categorize user tricks by status
     to_learn = [ut for ut in user_tricks if ut.status == 'to_learn']
     in_progress = [ut for ut in user_tricks if ut.status == 'in_progress']
     mastered = [ut for ut in user_tricks if ut.status == 'mastered']
 
-    # 🧠 Add this line to fetch all available tricks for the dropdown
+    # All available tricks for dropdown (pre-seeded list)
     all_tricks = Trick.query.order_by(Trick.name).all()
 
     return render_template(
@@ -46,137 +52,172 @@ def dashboard():
         to_learn=to_learn,
         in_progress=in_progress,
         mastered=mastered,
-        all_tricks=all_tricks  # 👈 Pass to template
+        all_tricks=all_tricks
     )
 
-# Add a trick to a user's personal list
+
+# ---------------------------------------
+# ADD TRICK TO USER'S PERSONAL LIST
+# ---------------------------------------
 @main_bp.route('/add_trick', methods=['POST'])
 @requires_auth
 def add_trick():
     user_id = session["user"]["sub"]
     trick_id = request.form.get('trick_id')
-    status = request.form.get('status')  # ✅ Get status from the form
+    status = request.form.get('status')
 
+    # Ensure form inputs are valid
     if not trick_id or status not in ['to_learn', 'in_progress', 'mastered']:
         return redirect(url_for('main.dashboard'))
 
-    # Prevent duplicates — only add if this user doesn’t already have it
+    # Prevent duplicate UserTrick entries
     existing = UserTrick.query.filter_by(user_id=user_id, trick_id=trick_id).first()
     if not existing:
-        new_user_trick = UserTrick(
-            user_id=user_id,
-            trick_id=trick_id,
-            status=status  # ✅ Use the selected status
-        )
+        new_user_trick = UserTrick(user_id=user_id, trick_id=trick_id, status=status)
         db.session.add(new_user_trick)
         db.session.commit()
 
     return redirect(url_for('main.dashboard'))
 
 
-
-# View details of a specific user trick, including session logs
+# ---------------------------------------
+# TRICK DETAIL PAGE (with all log entries)
+# ---------------------------------------
 @main_bp.route('/trick/<int:user_trick_id>')
 @requires_auth
 def trick_detail(user_trick_id):
     user_id = session["user"]["sub"]
+
+    # Confirm trick belongs to logged-in user
     user_trick = UserTrick.query.filter_by(id=user_trick_id, user_id=user_id).first_or_404()
-    return render_template('trick_detail.html', user_trick=user_trick)
+
+    # Show all log entries for this trick, newest first
+    log_entries = PracticeLogEntry.query.filter_by(user_trick_id=user_trick.id).order_by(
+        PracticeLogEntry.date.desc(),
+        PracticeLogEntry.time_logged.desc()
+    ).all()
+
+    return render_template(
+        'trick_detail.html',
+        user_trick=user_trick,
+        log_entries=log_entries,
+        current_date=date.today().isoformat()
+    )
 
 
-# Log a practice session for a given user trick
+# ---------------------------------------
+# LOG A NEW PRACTICE SESSION ENTRY
+# ---------------------------------------
 @main_bp.route('/log_session/<int:user_trick_id>', methods=['POST'])
 @requires_auth
 def log_session(user_trick_id):
     user_id = session["user"]["sub"]
 
-    # Retrieve the correct UserTrick instance for the logged-in user
     user_trick = UserTrick.query.filter_by(id=user_trick_id, user_id=user_id).first_or_404()
 
-    # Get submitted form values
-    date_str = request.form.get('date')  # optional
-    tries = request.form.get('tries', type=int)  # total number of attempts
-    landed = request.form.get('landed', type=int)  # total successful landings
-    notes = request.form.get('notes', '')  # optional notes
+    # Get form values
+    date_str = request.form.get('date')
+    tries = request.form.get('tries', type=int)
+    landed = request.form.get('landed', type=int)
+    note = request.form.get('notes', '')
 
-    # If no date is provided, fallback to today
-    from datetime import datetime, date
     session_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else date.today()
 
-    # ❗ Logical validation: can't land more times than attempted
-    if landed > tries:
-        # Return to the trick detail page with an error message
-        error = "You can't land more times than you tried! 🤔"
-        return render_template('trick_detail.html', user_trick=user_trick, error=error)
+    # Validate
+    if tries is None or landed is None or tries < 0 or landed < 0:
+        error = "Both 'tries' and 'landed' must be non-negative numbers! 🧮"
+        return render_template('trick_detail.html', user_trick=user_trick,
+                               log_entries=user_trick.log_entries, error=error)
 
-    # Create a new PracticeSession record
-    new_session = PracticeSession(
+    if landed > tries:
+        error = "You can't land more times than you tried! 🤔"
+        return render_template('trick_detail.html', user_trick=user_trick,
+                               log_entries=user_trick.log_entries, error=error)
+
+    # Create new row — no grouping, no JSON
+    new_log = PracticeLogEntry(
         user_trick_id=user_trick.id,
         date=session_date,
+        time_logged=datetime.utcnow(),
         tries=tries,
         landed=landed,
-        notes=notes
+        note=note
     )
 
-    # Add and commit to the database
-    db.session.add(new_session)
+    db.session.add(new_log)
     db.session.commit()
 
-    # Redirect back to the trick detail page after logging
     return redirect(url_for('main.trick_detail', user_trick_id=user_trick.id))
 
-# Change the status of a user trick (e.g. from in_progress to mastered)
+# ---------------------------------------
+# DELETE A PRACTICE LOG ENTRY
+# ---------------------------------------
+@main_bp.route('/delete_log_entry/<int:entry_id>', methods=['POST'])
+@requires_auth
+def delete_log_entry(entry_id):
+    user_id = session["user"]["sub"]
+
+    # Look up entry and confirm ownership through UserTrick
+    entry = PracticeLogEntry.query.get_or_404(entry_id)
+    if entry.user_trick.user_id != user_id:
+        return redirect(url_for('main.dashboard'))
+
+    user_trick_id = entry.user_trick.id
+
+    db.session.delete(entry)
+    db.session.commit()
+
+    return redirect(url_for('main.trick_detail', user_trick_id=user_trick_id))
+
+
+# ---------------------------------------
+# CHANGE STATUS OF A TRICK (e.g. from "in progress" to "mastered")
+# ---------------------------------------
 @main_bp.route('/update_status/<int:user_trick_id>', methods=['POST'])
 @requires_auth
 def update_status(user_trick_id):
     user_id = session["user"]["sub"]
     new_status = request.form.get('status')
-    user_trick = UserTrick.query.filter_by(id=user_trick_id, user_id=user_id).first_or_404()
 
-    if new_status in ['to_learn', 'in_progress', 'mastered']:
-        user_trick.status = new_status
-        db.session.commit()
+    if new_status not in ['to_learn', 'in_progress', 'mastered']:
+        return redirect(url_for('main.dashboard'))
+
+    user_trick = UserTrick.query.filter_by(id=user_trick_id, user_id=user_id).first_or_404()
+    user_trick.status = new_status
+    db.session.commit()
 
     return redirect(url_for('main.dashboard'))
 
-# Redirect user to Auth0 login
+
+# ---------------------------------------
+# AUTH: LOGIN via Auth0
+# ---------------------------------------
 @main_bp.route('/login')
 def login():
-    return oauth.auth0.authorize_redirect(
-        redirect_uri=os.getenv("AUTH0_CALLBACK_URL")
-    )
+    redirect_uri = url_for('main.callback', _external=True)
+    return oauth.auth0.authorize_redirect(redirect_uri=redirect_uri)
 
-# Log the user out and redirect to the homepage
+
+# ---------------------------------------
+# AUTH: CALLBACK HANDLER
+# ---------------------------------------
+@main_bp.route('/callback')
+def callback():
+    token = oauth.auth0.authorize_access_token()
+    user_info = token.get('userinfo')
+    session["user"] = user_info
+    return redirect(url_for("main.dashboard"))
+
+
+# ---------------------------------------
+# AUTH: LOGOUT and return to index
+# ---------------------------------------
 @main_bp.route('/logout')
 def logout():
-    session.clear()  # Remove session info
-
-    # Construct the Auth0 logout URL
-    logout_url = (
-        f"https://{os.getenv('AUTH0_DOMAIN')}/v2/logout?"
-        + urlencode({
-            "returnTo": url_for("main.index", _external=True),
-            "client_id": os.getenv("AUTH0_CLIENT_ID")
+    session.clear()
+    return redirect(
+        f'https://{os.getenv("AUTH0_DOMAIN")}/v2/logout?' + urlencode({
+            'returnTo': url_for('main.index', _external=True),
+            'client_id': os.getenv("AUTH0_CLIENT_ID")
         })
     )
-    return redirect(logout_url)
-
-
-# Handle the Auth0 callback and store user info in the session
-@main_bp.route('/callback')
-def callback_handling():
-    # Exchange the code for an access token and fetch user info
-    token = oauth.auth0.authorize_access_token()
-
-    # Extract userinfo directly (Authlib does this internally using OpenID Connect)
-    userinfo = token["userinfo"]
-
-    # Store user info in session
-    session["user"] = {
-        "sub": userinfo["sub"],
-        "name": userinfo.get("name"),
-        "email": userinfo.get("email"),
-        "picture": userinfo.get("picture")
-    }
-
-    return redirect(url_for("main.dashboard"))
