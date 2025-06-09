@@ -47,8 +47,13 @@ def dashboard():
     in_progress = [ut for ut in user_tricks if ut.status == 'in_progress']
     mastered = [ut for ut in user_tricks if ut.status == 'mastered']
 
-    # All available tricks for dropdown (pre-seeded list)
-    all_tricks = Trick.query.order_by(Trick.name).all()
+    # ✅ Sort each list alphabetically by trick name
+    to_learn.sort(key=lambda ut: ut.trick.name.lower())
+    in_progress.sort(key=lambda ut: ut.trick.name.lower())
+    mastered.sort(key=lambda ut: ut.trick.name.lower())
+
+    # Load all available tricks for the dropdown (also sorted)
+    all_tricks = Trick.query.order_by(Trick.name.asc()).all()
 
     return render_template(
         'dashboard.html',
@@ -124,18 +129,25 @@ def log_session(user_trick_id):
     landed = request.form.get('landed', type=int)
     note = request.form.get('notes', '')
 
+    # Parse the submitted date or default to today
     session_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else date.today()
+
+    # Disallow future dates
+    if session_date > date.today():
+        error = "You can't log a session in the future! 🕒"
+        return render_template('trick_detail.html', user_trick=user_trick,
+                               log_entries=user_trick.log_entries, error=error)
 
     # Validate
     if tries is None or landed is None or tries < 0 or landed < 0:
         error = "Both 'tries' and 'landed' must be non-negative numbers! 🧮"
         return render_template('trick_detail.html', user_trick=user_trick,
-                               log_entries=user_trick.log_entries, error=error)
+                               log_entries=user_trick.log_entries, error=error, note=note)
 
     if landed > tries:
         error = "You can't land more times than you tried! 🤔"
         return render_template('trick_detail.html', user_trick=user_trick,
-                               log_entries=user_trick.log_entries, error=error)
+                               log_entries=user_trick.log_entries, error=error, note=note)
 
     # Create new row — no grouping, no JSON
     new_log = PracticeLogEntry(

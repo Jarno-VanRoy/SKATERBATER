@@ -8,60 +8,64 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-  <!-- Page Heading -->
-  <h1>😎🛹 Your Trick Dashboard</h1>
-  <p>Track your skateboarding progress across tricks!</p>
+    <div class="container">
+        <div class="dashboard-container">
+          <!-- Page Heading -->
+          <h1>😎 Your Trick Dashboard 🛹</h1>
+          <p>Track your skateboarding progress across tricks!</p>
 
-  <!-- Add Trick Form -->
-  <div class="add-trick-form card">
-    <h2>Add a Trick</h2>
-    <form method="POST" action="{{ url_for('main.add_trick') }}">
-      <!-- Trick Dropdown: Populated from all_tricks -->
-      <label for="trick">Select a Trick:</label>
-      <select name="trick_id" id="trick" required>
-        <option value="">-- Choose a Trick --</option>
-        {% for trick in all_tricks %}
-          <option value="{{ trick.id }}">{{ trick.name }}</option>
-        {% endfor %}
-      </select>
+          <!-- Add Trick Form -->
+          <div class="add-trick-form card">
+            <h2>Add a Trick</h2>
+            <form method="POST" action="{{ url_for('main.add_trick') }}">
+              <!-- Trick Dropdown: Populated from all_tricks -->
+              <label for="trick">Select a Trick:</label>
+              <select name="trick_id" id="trick" required>
+                <option value="">-- Choose a Trick --</option>
+                {% for trick in all_tricks %}
+                  <option value="{{ trick.id }}">{{ trick.name }}</option>
+                {% endfor %}
+              </select>
 
-      <!-- Starting Status Dropdown -->
-    <br>
-      <label for="status">Start In Category:</label>
-      <select name="status" id="status" required>
-        <option value="to_learn">To Learn</option>
-        <option value="in_progress">In Progress</option>
-        <option value="mastered">Mastered</option>
-      </select>
-    <br>
+              <!-- Starting Status Dropdown -->
+            <br>
+              <label for="status">Start In Category:</label>
+              <select name="status" id="status" required>
+                <option value="to_learn">To Learn</option>
+                <option value="in_progress">In Progress</option>
+                <option value="mastered">Mastered</option>
+              </select>
+            <br>
 
-      <!-- Submit Button -->
-      <button type="submit">➕ Add Trick</button>
-    </form>
-  </div>
+              <!-- Submit Button -->
+              <button type="submit">➕ Add Trick</button>
+            </form>
+          </div>
+        </div>
+    </div>
 
-  <hr />
-
+<div class="container">
   <!-- Trick Lists by Status -->
   <div class="trick-lists">
-    <!-- To Learn Section -->
-    <section class="trick-list-section">
-      <h2>🧠 Tricks To Learn</h2>
-      {% if to_learn %}
-        <ul class="trick-list">
-          {% for ut in to_learn %}
-            <li>
-              {{ ut.trick.name }}
-              <a class="badge" href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No tricks in this category yet.</p>
-      {% endif %}
-    </section>
-
+        <!-- To Learn Section -->
+        <section class="trick-list-section">
+          <h2>🧠 Tricks To Learn</h2>
+          {% if to_learn %}
+            <ul class="trick-list">
+              {% for ut in to_learn %}
+                <li>
+                  {{ ut.trick.name }}
+                  <a class="badge" href="{{ url_for('main.trick_detail', user_trick_id=ut.id) }}">View</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No tricks in this category yet.</p>
+          {% endif %}
+        </section>
+    </div>
+</div>
+<div class="container">
     <!-- In Progress Section -->
     <section class="trick-list-section">
       <h2>⏳ Tricks In Progress</h2>
@@ -78,7 +82,9 @@
         <p>No tricks in progress.</p>
       {% endif %}
     </section>
+</div>
 
+<div class="container">
     <!-- Mastered Section -->
     <section class="trick-list-section">
       <h2>🏆 Mastered Tricks</h2>

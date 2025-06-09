@@ -7,7 +7,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="card trick-detail-card">
+
+<!-- 🛹 Trick Title + Status -->
+<div class="container">
 
   <!-- Trick Title -->
   <h1 class="trick-title">🛹 {{ user_trick.trick.name }}</h1>
@@ -30,56 +32,8 @@
     </div>
   </form>
 
-<!-- Practice Logs Section -->
-<h2 class="session-header">📅 Practice Log Entries</h2>
+<!-- ➕ Log New Session Form -->
 
-{% if log_entries %}
-  {# Group entries by date #}
-  {% set grouped_logs = {} %}
-  {% for entry in log_entries %}
-    {% set day = entry.date %}
-    {% if day not in grouped_logs %}
-      {% set _ = grouped_logs.update({day: []}) %}
-    {% endif %}
-    {% set _ = grouped_logs[day].append(entry) %}
-  {% endfor %}
-
-  <ul class="session-list">
-    {% for date, entries in grouped_logs.items() %}
-      {# Calculate total tries and landed for this date #}
-      {% set total_tries = entries | map(attribute='tries') | sum %}
-      {% set total_landed = entries | map(attribute='landed') | sum %}
-
-      <details class="session-date-group" open>
-        <summary><strong>{{ date.strftime('%A, %B %d, %Y') }}</strong></summary>
-        <div class="daily-summary">
-          <strong style="margin-left: 1.1rem;">Total:</strong> 🎲 Tries: {{ total_tries }} | 🎯 Landed: {{ total_landed }}
-        </div>
-        <ul class="session-sublist">
-          {% for entry in entries %}
-            <li class="session-card">
-              <div class="log-entry-row">
-                <div class="log-entry-details">
-                  <div><strong>🕒 {{ entry.time_logged.strftime('%H:%M') }}</strong></div>
-                  <div>🎲 Tries: {{ entry.tries }} | 🎯 Landed: {{ entry.landed }}</div>
-                  <div>📝 Notes: {{ (entry.note or '—') | replace('\n', '<br>') | safe }}</div>
-                </div>
-                <form method="POST" action="{{ url_for('main.delete_log_entry', entry_id=entry.id) }}" class="delete-entry-form">
-                  <button type="submit" class="delete-entry-button" title="Delete this entry">❌</button>
-                </form>
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
-      </details>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p class="session-empty">No log entries yet.</p>
-{% endif %}
-
-
-  <!-- Log New Entry Form -->
   <h3 class="session-header">➕ Log a New Session</h3>
 
   {% if error %}
@@ -90,7 +44,7 @@
     <div class="form-row">
       <div class="form-field">
         <label for="date">📅 Date:</label>
-        <input type="date" name="date" id="date" value="{{ current_date or current_date }}">
+        <input type="date" name="date" id="date" value="{{ current_date or current_date }}" max="{{ current_date }}">
       </div>
       <div class="form-field">
         <label for="tries">🎲 Tries:</label>
@@ -104,7 +58,7 @@
 
     <div class="form-group">
       <label for="notes">📝 Notes:</label>
-      <textarea name="notes" id="notes" rows="3"></textarea>
+      <textarea name="notes" id="notes" rows="3">{{ note or '' }}</textarea>
     </div>
 
     <button type="submit" class="btn-primary">💾 Save Entry</button>
@@ -112,11 +66,60 @@
 
 </div>
 
-    <!-- Progress Chart -->
-<h2 class="session-header">📊 Landing % Over Time</h2>
-<div class="progress-chart-container">
-  <img src="{{ url_for('main.trick_progress_chart', user_trick_id=user_trick.id) }}" alt="Progress Chart">
+<!-- 📅 Practice Logs Section -->
+<div class="container">
+  <h2 class="session-header">📅 Practice Log Entries</h2>
+
+  {% if log_entries %}
+    {% set grouped_logs = {} %}
+    {% for entry in log_entries %}
+      {% set day = entry.date %}
+      {% if day not in grouped_logs %}
+        {% set _ = grouped_logs.update({day: []}) %}
+      {% endif %}
+      {% set _ = grouped_logs[day].append(entry) %}
+    {% endfor %}
+
+    <ul class="session-list">
+      {% for date, entries in grouped_logs.items() %}
+        {% set total_tries = entries | map(attribute='tries') | sum %}
+        {% set total_landed = entries | map(attribute='landed') | sum %}
+
+        <details class="session-date-group" open>
+          <summary><strong>{{ date.strftime('%A, %B %d, %Y') }}</strong></summary>
+          <div class="daily-summary">
+            <strong style="margin-left: 1.1rem;">Total:</strong> 🎲 Tries: {{ total_tries }} | 🎯 Landed: {{ total_landed }}
+          </div>
+          <ul class="session-sublist">
+            {% for entry in entries %}
+              <li class="session-card">
+                <div class="log-entry-row">
+                  <div class="log-entry-details">
+                    <div><strong>🕒 {{ entry.time_logged.strftime('%H:%M') }}</strong></div>
+                    <div>🎲 Tries: {{ entry.tries }} | 🎯 Landed: {{ entry.landed }}</div>
+                    <div>📝 Notes: {{ (entry.note or '—') | replace('\n', '<br>') | safe }}</div>
+                  </div>
+                  <form method="POST" action="{{ url_for('main.delete_log_entry', entry_id=entry.id) }}" class="delete-entry-form">
+                    <button type="submit" class="delete-entry-button" title="Delete this entry">❌</button>
+                  </form>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </details>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="session-empty">No log entries yet.</p>
+  {% endif %}
+</div>
+
+<!-- 📊 Progress Chart -->
+<div class="container">
+  <h2 class="session-header">📊 Landing % Over Time</h2>
+  <div class="progress-chart-container">
+    <img src="{{ url_for('main.trick_progress_chart', user_trick_id=user_trick.id) }}" alt="Progress Chart">
+  </div>
 </div>
 
 {% endblock %}
-

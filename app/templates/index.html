@@ -1,17 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-    <div class="p-4 text-center">
-        <h1 class="text-3xl font-bold mb-2">Welcome to SKATERBATER 🛹</h1>
-        <p class="mb-4">Track your skate tricks and practice sessions.</p>
+    <div class="container">
+        <div class="p-4 text-center">
+            <h1 class="text-3xl font-bold mb-2">Welcome to SKATERBATER 🛹</h1>
+            <p class="mb-4">Track your skate tricks and practice sessions.</p>
 
-        {% if session.get('user') %}
-            <a href="{{ url_for('main.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Go to Dashboard
-            </a>
-        {% else %}
-            <a href="{{ url_for('main.login') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Log In to Get Started
-            </a>
-        {% endif %}
+            {% if session.get('user') %}
+                <a href="{{ url_for('main.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('main.login') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Log In to Get Started
+                </a>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}
