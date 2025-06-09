@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:15
+    container_name: skaterbater-db
+    restart: always
+    ports:
+      - "5432:5432"      # Expose if you need to connect externally; otherwise can omit
+    environment:
+      POSTGRES_USER: skateruser
+      POSTGRES_PASSWORD: skaterpass
+      POSTGRES_DB: skaterdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: skaterbater-app
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env            # copy .env.example → .env locally, fill in your secrets
+    ports:
+      - "8000:8000"     # Map host:container
+    # (no volume mount in prod; if you want hot-reload in dev you can mount .:/app)
+
+volumes:
+  pgdata:
