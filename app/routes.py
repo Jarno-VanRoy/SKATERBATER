@@ -391,3 +391,17 @@ def logout():
 @main_bp.app_errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+# ---------------------------------------
+# 500 Internal Server Error
+# ---------------------------------------
+@main_bp.app_errorhandler(500)
+def server_error(e):
+    return render_template("500.html"), 500
+
+# ---------------------------------------
+# Quick healthcheck that returns 200 OK
+# ---------------------------------------
+@main_bp.route("/healthz")
+def healthz():
+    return "OK", 200

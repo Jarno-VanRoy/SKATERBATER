@@ -1,5 +1,5 @@
 services:
-  db:
+  db:   # just a fallback at this point, because the used database is currently hosted on Render
     image: postgres:15
     container_name: skaterbater-db
     restart: always
