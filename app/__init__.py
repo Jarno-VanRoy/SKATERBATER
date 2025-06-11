@@ -12,42 +12,32 @@ migrate = Migrate()
 session_manager = Session()
 
 def create_app():
-    """Factory function to create and configure the SKATERBATER Flask app."""
     app = Flask(__name__)
 
-    # Load config from project root
-    from config import Config
-    app.config.from_object(Config)
+    # ─── Pick your config class based on FLASK_ENV ───────────────────
+    if os.getenv("FLASK_ENV", "development") == "production":
+        from config import ProductionConfig as ActiveConfig
+    else:
+        from config import DevelopmentConfig as ActiveConfig
 
-    # Initialize Flask extensions
+    app.config.from_object(ActiveConfig)
+
+    # ─── Initialize extensions ───────────────────────────────────────
     db.init_app(app)
     migrate.init_app(app, db)
     session_manager.init_app(app)
 
-    # Initialize OAuth from separate module to avoid circular import
+    # ─── OAuth setup ────────────────────────────────────────────────
     from app.oauth import oauth
     oauth.init_app(app)
 
-    # Register main blueprint (after app is ready)
+    # ─── Register your blueprint(s) ─────────────────────────────────
     from .routes import main_bp
     app.register_blueprint(main_bp)
 
-    # Inject logged-in user into all templates
+    # ─── Make `user` available in all templates ─────────────────────
     @app.context_processor
     def inject_user():
-        return dict(user=session.get('user'))
-
-    # # ✅ Auto-login as fake user during development
-    # if os.getenv("DEBUG_FAKE_LOGIN", "false").lower() == "true":
-    #     print("⚠️  DEBUG_FAKE_LOGIN is enabled — all requests use fake user 'auth0|demo_user'")
-    #
-    #     @app.before_request
-    #     def fake_login_for_demo_user():
-    #         if "user" not in session:
-    #             session["user"] = {
-    #                 "sub": "auth0|demo_user",
-    #                 "name": "Demo Skater",
-    #                 "email": "demo@skaterbater.com"
-    #             }
+        return dict(user=session.get("user"))
 
     return app
