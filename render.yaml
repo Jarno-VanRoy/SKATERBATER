@@ -1,0 +1,63 @@
+services:
+  - type: postgres
+    name: skaterbater-db
+    plan: free  # you can bump to hobby or standard as needed
+    # these credentials will be auto-generated & injected into the app service
+    databaseName: skaterdb
+    user: skateruser
+    password: skaterpass
+    envVars:
+      # This is the automatically exported URL your app will use
+      - key: DATABASE_URL
+        fromDatabase:
+          name: skaterbater-db
+          property: connectionString
+
+  # 2) Web service running your Flask app
+  - type: web
+    name: skaterbater-app
+    plan: free  # Upgrade for more RAM/cpu or custom domains
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_SECRET_KEY
+        fromServiceEnvironment: FLASK_SECRET_KEY
+      - key: AUTH0_CLIENT_ID
+        fromServiceEnvironment: AUTH0_CLIENT_ID
+      - key: AUTH0_CLIENT_SECRET
+        fromServiceEnvironment: AUTH0_CLIENT_SECRET
+      - key: AUTH0_DOMAIN
+        fromServiceEnvironment: AUTH0_DOMAIN
+      - key: AUTH0_CALLBACK_URL
+        fromServiceEnvironment: AUTH0_CALLBACK_URL
+      # DATABASE_URL is injected by the Postgres service above
+    build:
+      dockerfilePath: Dockerfile
+      buildContext: .
+    # Before your app starts, run migrations
+    buildCommand: >
+      flask db upgrade
+    # Gunicorn serves on port 8000 in your container
+    startCommand: >
+      gunicorn --workers 4 --threads 4 --bind 0.0.0.0:8000 run:app
+    # Basic HTTP health check
+    healthCheckPath: /healthz
+    # Expose the port to the public
+    ports:
+      - 8000
+
+# Optional: define pull request previews on Render
+pullRequestPreviews:
+  envVars:
+    - key: FLASK_ENV
+      value: staging
+    - key: FLASK_SECRET_KEY
+      fromServiceEnvironment: FLASK_SECRET_KEY
+    - key: AUTH0_CLIENT_ID
+      fromServiceEnvironment: AUTH0_CLIENT_ID
+    - key: AUTH0_CLIENT_SECRET
+      fromServiceEnvironment: AUTH0_CLIENT_SECRET
+    - key: AUTH0_DOMAIN
+      fromServiceEnvironment: AUTH0_DOMAIN
+    - key: AUTH0_CALLBACK_URL
+      fromServiceEnvironment: AUTH0_CALLBACK_URL
