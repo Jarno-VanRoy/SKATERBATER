@@ -16,9 +16,5 @@ COPY . .
 # Expose the port Gunicorn will serve on
 EXPOSE 8000
 
-# Launch with Gunicorn, pointing at the Flask app defined in run.py
-CMD ["gunicorn", \
-     "--workers", "4", \
-     "--threads", "4", \
-     "--bind", "0.0.0.0:8000", \
-     "run:app"]
+# Make the migration + gunicorn startup atomic
+ENTRYPOINT ["sh", "-c", "flask db upgrade && exec gunicorn --workers 4 --threads 4 --bind 0.0.0.0:8000 run:app"]

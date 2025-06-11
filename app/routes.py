@@ -372,7 +372,6 @@ def callback():
     session["user"] = user_info
     return redirect(url_for("main.dashboard"))
 
-
 # ---------------------------------------
 # AUTH: LOGOUT and return to index
 # ---------------------------------------
@@ -385,3 +384,10 @@ def logout():
             'client_id': os.getenv("AUTH0_CLIENT_ID")
         })
     )
+
+# ---------------------------------------
+# 404 PAGE
+# ---------------------------------------
+@main_bp.app_errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404

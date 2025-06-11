@@ -170,3 +170,27 @@ button.btn-primary:hover {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.15);
 }
+/* fix inline field widths by sizing the wrapper, not the input */
+.log-session-form .form-row .form-field {
+  /* Prevent the flex-item from growing or shrinking */
+  flex: none;
+}
+
+/* Date picker field */
+.log-session-form .form-row .form-field:nth-child(1) {
+  width: 150px;
+}
+
+/* Tries & Landed fields */
+.log-session-form .form-row .form-field:nth-child(2),
+.log-session-form .form-row .form-field:nth-child(3) {
+  width: 80px;
+}
+
+/* Make inputs fill their wrapper */
+.log-session-form .form-row .form-field input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+

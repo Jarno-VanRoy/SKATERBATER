@@ -122,4 +122,15 @@
   </div>
 </div>
 
+<!-- 📊 lands Chart -->
+<div class="container">
+  <h2 class="session-header">🪜 Cumulative Lands Over Time</h2>
+  <div class="progress-chart-container">
+    <img
+    src="{{ url_for('main.cumulative_lands_chart', user_trick_id=user_trick.id) }}"
+    alt="Cumulative lands over time for {{ user_trick.trick.name }}"
+  >
+  </div>
+</div>
+
 {% endblock %}

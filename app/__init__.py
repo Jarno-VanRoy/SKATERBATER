@@ -37,17 +37,17 @@ def create_app():
     def inject_user():
         return dict(user=session.get('user'))
 
-    # ✅ Auto-login as fake user during development
-    if os.getenv("DEBUG_FAKE_LOGIN", "false").lower() == "true":
-        print("⚠️  DEBUG_FAKE_LOGIN is enabled — all requests use fake user 'auth0|demo_user'")
-
-        @app.before_request
-        def fake_login_for_demo_user():
-            if "user" not in session:
-                session["user"] = {
-                    "sub": "auth0|demo_user",
-                    "name": "Demo Skater",
-                    "email": "demo@skaterbater.com"
-                }
+    # # ✅ Auto-login as fake user during development
+    # if os.getenv("DEBUG_FAKE_LOGIN", "false").lower() == "true":
+    #     print("⚠️  DEBUG_FAKE_LOGIN is enabled — all requests use fake user 'auth0|demo_user'")
+    #
+    #     @app.before_request
+    #     def fake_login_for_demo_user():
+    #         if "user" not in session:
+    #             session["user"] = {
+    #                 "sub": "auth0|demo_user",
+    #                 "name": "Demo Skater",
+    #                 "email": "demo@skaterbater.com"
+    #             }
 
     return app
