@@ -4,7 +4,7 @@ services:
     container_name: skaterbater-db
     restart: always
     ports:
-      - "5432:5432"      # Expose if you need to connect externally; otherwise can omit
+      - "5433:5432"      # Expose if you need to connect externally; otherwise can omit
     environment:
       POSTGRES_USER: skateruser
       POSTGRES_PASSWORD: skaterpass
