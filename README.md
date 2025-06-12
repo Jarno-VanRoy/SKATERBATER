@@ -58,7 +58,7 @@ skaterbater/            # Project root
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/yourusername/skaterbater.git
+   git clone https://github.com/Jarno-VanRoy/SKATERBATER.git
    cd skaterbater
    ```
 
