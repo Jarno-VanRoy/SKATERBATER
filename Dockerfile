@@ -1,31 +1,26 @@
-# Use a small, supported Python runtime
+# Dockerfile
 FROM python:3.13-slim
 
-# Set a working directory
+# 1. Set working dir
 WORKDIR /app
 
-# Copy only requirements first (for better layer caching)
-COPY requirements.txt ./
+# 2. Copy only requirements to leverage layer cache
+COPY requirements.txt .
 
-# Install Python dependencies
+# 3. Install deps
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
+# 4. Copy the rest of your code, including entrypoint.sh
 COPY . .
 
-# If you need FLASK_APP/FLASK_ENV set, you can uncomment these:
-# ENV FLASK_APP=run.py
-# ENV FLASK_ENV=production
+# 5. Make entrypoint.sh executable (done inside the container, no host chmod needed)
+RUN chmod +x ./entrypoint.sh
 
-# Expose the port Gunicorn will serve on
+# 6. Ensure flask CLI knows where to find your app
+ENV FLASK_APP=run.py
+
+# 7. Expose your port
 EXPOSE 8000
 
-# On container start:
-# 1. upgrade the database to the latest migration
-# 2. seed the tricks table (won't duplicate existing rows)
-# 3. exec gunicorn to run your Flask app
-ENTRYPOINT ["sh", "-c", "\
-    flask db upgrade && \
-    python seed_tricks.py && \
-    exec gunicorn --workers 4 --threads 4 --bind 0.0.0.0:8000 run:app\
-"]
+# 8. Kick off your script (which runs migrations, seeds, then launches Gunicorn)
+ENTRYPOINT ["./entrypoint.sh"]
