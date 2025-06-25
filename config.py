@@ -1,42 +1,42 @@
 import os
+from pathlib import Path
 
-# absolute path to project root
-basedir = os.path.abspath(os.path.dirname(__file__))
+# Base folder for SQLite fallback
+basedir = Path(__file__).parent.resolve()
 
 class Config:
-    """Base configuration for the SKATERBATER app."""
+    """Base configuration: secret key, DB URI, Auth0, etc."""
+    SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
-    # Flask secret key from .env
-    SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
-
-    # Database URL (e.g., Postgres on Render or local SQLite)
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    # Use DATABASE_URL if set (e.g. in .env), otherwise fall back to local SQLite
+    SQLALCHEMY_DATABASE_URI = (
+        os.getenv("DATABASE_URL")
+        or f"sqlite:///{basedir / 'instance' / 'skaterbater.db'}"
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Flask-Session will store session data on the local filesystem
+    # Session storage
     SESSION_TYPE = "filesystem"
 
-    # Auth0 configuration (loaded from .env)
+    # Auth0 settings (default callback for local)
     AUTH0_CLIENT_ID     = os.getenv("AUTH0_CLIENT_ID")
     AUTH0_CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET")
     AUTH0_DOMAIN        = os.getenv("AUTH0_DOMAIN")
-    AUTH0_CALLBACK_URL  = os.getenv("AUTH0_CALLBACK_URL")
+    AUTH0_CALLBACK_URL  = os.getenv(
+        "AUTH0_CALLBACK_URL",
+        "http://localhost:8000/callback"
+    )
 
 
 class ProductionConfig(Config):
-    """Production-specific configuration."""
-
-    # Ensure cookies are only sent over HTTPS
+    """Production: HTTPS cookies, URL scheme, etc."""
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
-
-    # Generate external URLs with https://
-    PREFERRED_URL_SCHEME = "https"
+    PREFERRED_URL_SCHEME  = "https"
 
 
 class DevelopmentConfig(Config):
-    """Development-specific configuration."""
-    # In development, allow HTTP for convenience
+    """Development: allow HTTP for convenience."""
     SESSION_COOKIE_SECURE = False
     REMEMBER_COOKIE_SECURE = False
-    PREFERRED_URL_SCHEME = "http"
+    PREFERRED_URL_SCHEME  = "http"

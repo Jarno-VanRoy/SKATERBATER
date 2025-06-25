@@ -1,10 +1,10 @@
 services:
-  db:   # just a fallback at this point, because the used database is currently hosted on Render
+  db:
     image: postgres:15
     container_name: skaterbater-db
     restart: always
     ports:
-      - "5432:5432"      # Expose if you need to connect externally; otherwise can omit
+      - "5433:5432"              # Host 5433 → Container 5432
     environment:
       POSTGRES_USER: skateruser
       POSTGRES_PASSWORD: skaterpass
@@ -12,17 +12,21 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  web:
+  app:
     build: .
     container_name: skaterbater-app
     restart: always
     depends_on:
       - db
     env_file:
-      - .env            # copy .env.example → .env locally, fill in your secrets
+      - .env                    # Your .env.local with FLASK_ENV, DATABASE_URL, etc.
+    environment:
+      # Ensure the app sees the right DB
+      DATABASE_URL: "postgresql://skateruser:skaterpass@db:5432/skaterdb"
     ports:
-      - "8000:8000"     # Map host:container
-    # (no volume mount in prod; if you want hot-reload in dev you can mount .:/app)
+      - "8000:8000"             # Host 8000 → Container 8000 (Gunicorn)
+    volumes:
+      - .:/app                  # Mount code for live reload in dev
 
 volumes:
   pgdata:
