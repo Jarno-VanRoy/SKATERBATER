@@ -9,10 +9,8 @@ class Config:
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
     # Use DATABASE_URL if set (e.g. in .env), otherwise fall back to local SQLite
-    SQLALCHEMY_DATABASE_URI = (
-        os.getenv("DATABASE_URL")
-        or f"sqlite:///{basedir / 'instance' / 'skaterbater.db'}"
-    )
+    default_sqlite = "sqlite:///" + os.path.join(basedir, "instance", "skaterbater.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", default_sqlite)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Session storage
